@@ -24,7 +24,9 @@ struct ContentView: View {
     @State private var rating = 0
 
     var body: some View {
-        RateView()
+        RateView{n in
+            Text("cur \(n)")
+        }
     }
 }
 ```
@@ -38,7 +40,9 @@ RateView(
 	count:6,
         spacing: 10,
 		icon:.collect
-        )
+        ){n in
+            Text("cur \(n)")
+        }
 ```
 
 ## Installation
