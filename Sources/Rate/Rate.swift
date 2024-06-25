@@ -50,7 +50,7 @@ public struct RatelView: View {
 		return array
 	}
 	
-	private var capculeOffsetY:CGFloat{
+	private var capsuleOffsetY:CGFloat{
 		if selectIndex > 0 {
 			return spacing * 1.5 - (height / 2) + 30
 		}else{
@@ -58,7 +58,7 @@ public struct RatelView: View {
 		}
 	}
 	   
-	public init( count: Int, spacing: CGFloat, icons: IconType, complect: @escaping (Int) -> Void) {
+	public init( count: Int = 6, spacing: CGFloat = 4, icons: IconType = .heart, complect: @escaping (Int) -> Void) {
 		self.count = count
 		self.spacing = spacing
 		self.icons = icons
@@ -71,7 +71,7 @@ public struct RatelView: View {
 			Capsule()
 				.fill(Color.teal.opacity(0.3))
 				.frame(width: 30, height: capsuleHeight )
-				.offset(y: capculeOffsetY)
+				.offset(y: capsuleOffsetY)
 				.offset(y: offsetYbyIndex)
 			
 			VStack(spacing: spacing){
