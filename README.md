@@ -9,9 +9,12 @@ Rate is a simple and beautiful rating control written in SwiftUI, which supports
 
 ## Features
 
-- 支持触摸手势
-- 支持自定义评分标签
-- 支持自定义评分标签间距
+- 支持自定义count。
+- 支持自定义icon。
+- 支持自定义color。
+- 支持自定义size。
+- 支持点击和滑动事件。
+- 支持震动反馈
 
 ## Usage
 
@@ -24,8 +27,9 @@ struct ContentView: View {
     @State private var rating = 0
 
     var body: some View {
-        RateView{n in
-            Text("cur \(n)")
+			// default propotize count: Int = 6, size: FontSize = .regular ,icon:IconType = .heart,color:Color = .pink 
+			Rate(rating: $rating)
+			
         }
     }
 }
@@ -36,13 +40,7 @@ struct ContentView: View {
 Rate supports customization of colors, sizes, labels, and more. To customize a RateView, simply pass in the desired values as parameters when creating the instance.
 
 ```swift
-RateView(
-	count:6,
-        spacing: 10,
-		icon:.collect
-        ){n in
-            Text("cur \(n)")
-        }
+	Rate(rating: $rating, count: 5, size: .large, color: .pink)
 ```
 
 ## Installation

@@ -3,163 +3,183 @@
 
 import SwiftUI
 
-public struct RatelView: View {
-	@State private var selectIndex = 0
+@available(iOS 15,*)
+public struct Rate:View{
+	@Binding var rating:Int
 	@State private var isThrottling: Bool = false
-	public enum IconType: String {
-			case star = "star"
-			case heart = "heart"
-		}
 	var count:Int
-	var spacing:CGFloat
-	var icons:IconType
-	var complect:(Int)->Void
+
+	var size:FontSize
 	
-	func icon(n:Int,m:Int) -> String{
-		return n == 0 ? m == n ? icons.rawValue + ".slash.fill"  : icons.rawValue + ".slash" : m >= n ? icons.rawValue + ".fill" : icons.rawValue
+	var icon:IconType
+	
+	var color:Color
+	
+	var height:CGFloat{
+		CGFloat(count) * (calculte.itemSize + calculte.spacing)
 	}
 	
-	// 使用计算属性来计算高度和间距项高度
-	   private var height: CGFloat {
-		   let totalItemHeight = CGFloat(30 * count)
-		   let totalSpacing = spacing * CGFloat(count + 1)
-		   return totalItemHeight + totalSpacing
-	   }
-	   
-	   private var offsetYbyIndex: CGFloat {
-		   selectIndex > 0 ? CGFloat((30 + spacing) / 2) * CGFloat(selectIndex) : 0
-		
-	   }
-		
-	private var capsuleHeight:CGFloat{
-		if selectIndex > 0 {
-			let a = CGFloat(30 * selectIndex)
-			let b = CGFloat(selectIndex - 1) * spacing
-			return a + b
-//			return 30
+	var CapsuleHeight:CGFloat{
+		if rating > 1 {
+			height / CGFloat(count) * CGFloat(rating)
 		}else {
-			return 30
+			height / CGFloat(count)
+		}
+			
+	}
+	
+	struct CalcultePropertizes{
+		var fontSize:Font
+		var itemSize:CGFloat
+		var spacing:CGFloat
+	}
+	
+	var calculte:CalcultePropertizes{
+		switch size {
+			case .huge:
+				CalcultePropertizes(fontSize: .largeTitle, itemSize: 34, spacing: 14)
+			case .large:
+				CalcultePropertizes(fontSize: .title, itemSize: 28, spacing: 10)
+			case .medium:
+				CalcultePropertizes(fontSize: .title2, itemSize: 22, spacing: 8)
+			case .regular:
+				CalcultePropertizes(fontSize: .headline, itemSize: 18, spacing: 6)
+			case .small:
+				CalcultePropertizes(fontSize: .footnote, itemSize: 13, spacing: 4)
+			case .tink:
+				CalcultePropertizes(fontSize: .caption2, itemSize: 11, spacing: 4)
+			
 		}
 	}
 	
-	private var heightArray:[CGFloat]{
-		var array:[CGFloat] = Array(repeating: 0, count: count)
-		for n in 0..<count{
-			array[n] = (height / CGFloat(count)) * CGFloat(n)
-		}
-		return array
+
+	
+	public enum FontSize{
+		case huge
+		case large
+		case medium
+		case regular
+		case small
+		case tink
 	}
 	
-	private var capsuleOffsetY:CGFloat{
-		if selectIndex > 0 {
-			return spacing * 1.5 - (height / 2) + 30
-		}else{
-			return spacing - (height / 2) + 15
+	public enum IconType:String {
+		case star = "star"
+		case heart = "heart"
+	}
+	func icon(_ n:Int,_ m:Int) -> String{
+		return n == 0 ? m == n ? icon.rawValue + ".slash.fill"  : icon.rawValue + ".slash" : m >= n ? icon.rawValue + ".fill" : icon.rawValue
+	}
+	public init(rating:Binding<Int>,count: Int = 6, size: FontSize = .small ,icon:IconType = .heart,color:Color = .pink) {
+		self._rating = rating
+			self.count = count
+			self.size = size
+			self.icon = icon
+			self.color = color
 		}
-	}
-	   
-	public init( count: Int = 6, spacing: CGFloat = 4, icons: IconType = .heart, complect: @escaping (Int) -> Void) {
-		self.count = count
-		self.spacing = spacing
-		self.icons = icons
-		self.complect = complect
-	}
 	
-	public var body: some View {
+	public var body: some View{
 		ZStack{
-			
 			Capsule()
-				.fill(Color.teal.opacity(0.3))
-				.frame(width: 30, height: capsuleHeight )
-				.offset(y: capsuleOffsetY)
-				.offset(y: offsetYbyIndex)
-			
-			VStack(spacing: spacing){
-				Group{
-					ForEach(Array(0..<count), id: \.self){n in
-						Image(systemName:icon(n:n,m:selectIndex))
-						.frame(width: 30,height: 30)
-						.onTapGesture(perform: {
+				.fill(.white.opacity(0.3))
+				.frame(width: calculte.itemSize + calculte.spacing,height: CapsuleHeight)
+				
+				.frame(maxHeight: height,alignment: .top)
+				.offset(y:rating > 0 ? calculte.itemSize + calculte.spacing : 0)
+				
+			VStack(spacing: calculte.spacing){
+				ForEach(Array(0..<count),id: \.self){n in
+					Image(systemName: icon(n,rating))
+						.resizable()
+						.scaledToFit()
+						.frame(width: calculte.itemSize,height: calculte.itemSize)
+						
+						.foregroundColor(rating >= n ? color.opacity(0.7) : .gray.opacity(0.7))
+						.onTapGesture {
 							withAnimation(.default){
-								selectIndex = n
-								hapticFeedback()
+								rating = n
+								
 							}
-						})
-						.foregroundColor(selectIndex >= n ? .pink.opacity(0.7) : .white.opacity(0.5))
-					}
-					
+						}
+						
 				}
 			}
 			
-			.gesture(
-				DragGesture()
-					.onChanged { value in
-						// 手指滑动时触发的事件
-						throttleHandleDrag(location: value.location)
-					}
-					.onEnded { value in
-						// 手指滑动结束时重置节流状态
-						isThrottling = false
-					}
-				
-			)
+			
 		}
-		
-		.frame(width: 40,height:height)
+		.padding(calculte.spacing / 2)
 		.background(.ultraThinMaterial)
-		.cornerRadius(30)
+		.cornerRadius(calculte.itemSize)
 		
+		.gesture(
+						DragGesture()
+							.onChanged { value in
+								// 手指滑动时触发的事件
+								throttleHandleDrag(location: value.location)
+							}
+							.onEnded { value in
+								// 手指滑动结束时重置节流状态
+								isThrottling = false
+							}
+						
+					)
+		
+			
 	}
+	
 	private func hapticFeedback() {
-		let generator = UIImpactFeedbackGenerator(style: .heavy)
-		generator.impactOccurred()
-	}
-	
-	private func throttleHandleDrag(location: CGPoint) {
-		// 如果当前处于节流状态，则不执行
-		if isThrottling {
-			return
+			let generator = UIImpactFeedbackGenerator(style: .heavy)
+			generator.impactOccurred()
 		}
 		
-		// 否则，执行handleDrag函数并开始节流
-		handleDrag(location: location)
-		
-		// 设置节流状态为true，并在150毫秒后重置为false
-		isThrottling = true
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-			self.isThrottling = false
+		private func throttleHandleDrag(location: CGPoint) {
+			// 如果当前处于节流状态，则不执行
+			if isThrottling {
+				return
+			}
+			
+			// 否则，执行handleDrag函数并开始节流
+			handleDrag(location: location)
+			
+			// 设置节流状态为true，并在150毫秒后重置为false
+			isThrottling = true
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+				self.isThrottling = false
+			}
 		}
-	}
-	
-	private func handleDrag( location: CGPoint) {
-		// 检查是否需要根据拖动位置更新 selectIndex
-		var newIndex = 0
-
-			   for (index, element) in heightArray.enumerated() {
-				   if index == count - 1 && location.y >= element {
-					   newIndex = index
-					   break
-				   }else{
-					   if index >= 0 && location.y >= element  && location.y < heightArray[index + 1] {
-						   newIndex = index
-						   break
+		
+		private func handleDrag( location: CGPoint) {
+			// 检查是否需要根据拖动位置更新 rating
+			var newIndex:Int{
+				let n = Int(location.y / (height / CGFloat(count)))
+				if n >= 0 && n <= count - 1{
+					return n
+				}else if n < 0{
+					return 0
+				}else if n > count - 1{
+					return count - 1
+				}
+				return 0
+			}
+				   if newIndex != rating {
+					   withAnimation(.default){
+						hapticFeedback()
+						   rating = newIndex
+						  
 					   }
 				   }
-			   }
-
-			   if newIndex != selectIndex {
-				   withAnimation(.default){
-					hapticFeedback()
-					   selectIndex = newIndex
-					   complect(selectIndex)
-				   }
-			   }
 
 
+				
 			
-		
-	}
+		}
+	
+
+	
 }
 
-
-
+@available(iOS 18,*)
+#Preview {
+	@Previewable @State var rating:Int = 3
+	Rate(rating:$rating,size: .large)
+}
